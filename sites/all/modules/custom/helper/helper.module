@@ -1,0 +1,85 @@
+<?php
+
+// hook_menu()
+function helper_menu(){
+	$items = array();
+	$items['shares/json'] = array(
+		'page callback' => '_json_output',
+		'access callback' => TRUE,
+		'file'	=> 'helper.pages.inc',
+	);
+	
+	$items['admin/site-info-settings'] = array(
+	    'title' => 'Site info settings',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('site_info_form'),
+		'access arguments' => array('administer content'),
+		'file'	=> 'helper.pages.inc', 
+	);
+	return $items;
+}
+
+// hook_block_info()
+function helper_block_info() {
+  $blocks = array();
+  $blocks['shares'] = array(
+      'info' => t('Shares'),
+      'cache' => DRUPAL_NO_CACHE,
+    );
+    
+  $blocks['site-info'] = array(
+      'info' => t('Site info'),
+      'cache' => DRUPAL_NO_CACHE,  
+  );
+  return $blocks;
+}
+
+// hook_block_view()
+function helper_block_view($delta = '') {
+  $block = array();
+ 
+  switch ($delta) {
+    case 'shares':
+		require_once 'helper.pages.inc'; 		  
+		
+		$block['subject'] = t('Shares');
+		  
+		$header = array('Path', 'Facebook Shares');
+
+		$data = _get_facebook_share_data();
+
+		foreach($data as $id => $item){
+			$rows[] = array($id, (!isset($item['shares']) || empty($item['shares']))? 'none' : $item['shares']);
+		}
+		  
+		$block['content'] =  theme('table', array('header' => $header, 'rows' => $rows)); 
+      break;
+    case 'site-info':
+        require_once 'helper.pages.inc';
+        
+        drupal_add_js(path_to_theme() . '/js/site-info.js');
+        
+        if(_access_block_site_info(variable_get('site_info_page_radio','all'))){
+            $block['content'] = array(
+                'list' => array(
+                    '#theme' => 'item_list',
+                    '#type' => 'ul',
+                    '#attributes' => array('id' => 'site-info-list'),
+                    '#items' => array(
+                      t('Total registered users: @count', array('@count' => _count_items('user'))),
+                      t('Total number of nodes: @count', array('@count' => _count_items('node'))),
+                      t('Total number of comments: @count', array('@count' => _count_items('comment'))),
+                      t('Total number of content types: @count', array('@count' => _count_items('node_type'))),
+                      t('Total number of fields: @count', array('@count' => _count_items('fields')))
+                    ),
+                ),
+            );
+        }else{
+            $block['content'] =  t('You don’t have an access');
+        }
+        
+        
+        break;
+  } 
+  return $block;
+}
