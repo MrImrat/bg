@@ -57,7 +57,7 @@ function helper_block_view($delta = '') {
     case 'site-info':
         require_once 'helper.pages.inc';
         
-        drupal_add_js(path_to_theme() . '/js/site-info.js');
+        drupal_add_js(drupal_get_path('theme','custom') . '/js/site-info.js');
         
         if(_access_block_site_info(variable_get('site_info_page_radio','all'))){
             $block['content'] = array(

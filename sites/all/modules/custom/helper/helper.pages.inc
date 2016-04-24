@@ -117,5 +117,13 @@ function _count_items($type){
 			$count = $query->execute()->fetchField();
 			
 			return $count;
+			break;
+		case 'fields':
+			$query = db_select('field_config_instance', 'fci')->condition('fci.entity_type', 'node');
+			$query->addExpression('COUNT(DISTINCT field_name)');
+			$count = $query->execute()->fetchField();
+			
+			return $count;
+			break;
 	}
 }
